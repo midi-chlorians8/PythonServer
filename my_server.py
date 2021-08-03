@@ -44,8 +44,8 @@ while True: #В цикле бесконечном слушаем и печата
     message_string = split_data[len(split_data)-1].split(",")  # Нарезаем в массив строк по символу ЗАПЯТАЯ ; [len(split_data)-1] = Последний элемент массива. Счёт с нуля поэтому -1
     print("message_strings [all] :")
     #print(messadge_string[0])
-    #print(len(messadge_string) )    #len() тут кол во элементов в массиве
-    for x in message_string:       #Перебирает все элементы массива и распечатывает
+    #print(len(messadge_string) )   #len() тут кол во элементов в массиве
+    for x in message_string:        #Перебирает все элементы массива и распечатывает
         print(x)                    #Перебирает все элементы массива и распечатывает
 
     #Обработка повторяемости. Не работает. Разный ruleId":8240654365311143909
