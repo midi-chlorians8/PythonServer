@@ -1,64 +1,30 @@
-# ===================================== SERVER =====================================
-# Код принимает сообщение с локальной Grafana через hook. Парсит. Решает повторяется ли прошлое сообщение или нет.
-# По мотивам видео: https://www.youtube.com/watch?v=f5ic6D30_mQ
-# Autor: Mister I
-# 03.08.2021
+dataTestAlerting ="""POST / HTTP/1.1
+Host: 18.193.93.213:2000
+User-Agent: Grafana
+Content-Length: 386
+Content-Type: application/json
+Accept-Encoding: gzip
 
-import socket
+{"dashboardId":1,"evalMatches":[{"value":100,"metric":"High value","tags":null},{"value":200,"metric":"Higher Value","tags":null}],"message":"Someone is testing the alert notification within Grafana.","orgId":0,"panelId":1,"ruleId":7751783831957464368,"ruleName":"Test notification","ruleUrl":"http://localhost:3000/","state":"alerting","tags":{},"title":"[Alerting] Test notification"}"""#= client_socket.recv(1024).decode('utf-8')  # Принимаем 1024 байта и декодируем их как строку в utf-8 кодировке
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Создаём обьект сервер который пользует сокет.
-#server.bind(('127.0.0.1', 2000))  # Привязываем сервер к ip и порту
-server.bind(('0.0.0.0', 2000))  # Привязываем сервер к ip и порту
-server.listen(4)  # Слушаем 4 входящих соединения
-print('Working...')
+dataMemoryAlerting ="""POST / HTTP/1.1
+Host: 18.193.93.213:2000
+User-Agent: Grafana
+Content-Length: 1131
+Content-Type: application/json
+Accept-Encoding: gzip
 
-# Logical variables ============
-count = 0  # Cтартовое значение
-old_data = 'first'
-new_data = 'second'
-# Logical variables ============
-# ===================================== SERVER =====================================
+{"dashboardId":2,"evalMatches":[{"value":535699456,"metric":"172.30.0.232:19100_Avaliable","tags":{"__name__":"node_memory_MemAvailable_bytes","instance":"172.30.0.232:19100","job":"Monitoring","nodename":"PROD-MKTG02"}},{"value":593313792,"metric":"172.30.1.223:19100_Avaliable","tags":{"__name__":"node_memory_MemAvailable_bytes","instance":"172.30.1.223:19100","job":"Monitoring","nodename":"ansible-from-legacy-monitorings"}},{"value":290000896,"metric":"172.30.2.131:19100_Avaliable","tags":{"__name__":"node_memory_MemAvailable_bytes","instance":"172.30.2.131:19100","job":"Monitoring","nodename":"PROD-CONTENT"}},{"value":568360960,"metric":"172.30.2.251:19100_Avaliable","tags":{"__name__":"node_memory_MemAvailable_bytes","instance":"172.30.2.251:19100","job":"Monitoring","nodename":"BastionHost-MassageBook-from-legacy-monitorings"}}],"message":"Memory less 3.5gb on pro"""
 
+dataCPUAlerting ="""POST / HTTP/1.1
+Host: 18.193.93.213:2000
+User-Agent: Grafana
+Content-Length: 390
+Content-Type: application/json
+Accept-Encoding: gzip
 
-
-
-
-# ===================================== Jira =====================================
-
-#https://id.atlassian.com/manage-profile/security/api-tokens
-#curl -v https://playsdev.atlassian.net --user dobryjsok60@gmail.com:XaJFElW8LewGF1GJOWQ8AF8B
-#Test PlaysDev
-#30.04.2021
-
-from jira import JIRA
-
-jira_options = {'server': 'https://playsdev.atlassian.net'}
-#jira = JIRA(options=jira_options, basic_auth=(login, api_key))
-jira = JIRA(options=jira_options, basic_auth=('dobryjsok60@gmail.com', 'XaJFElW8LewGF1GJOWQ8AF8B'))
-
-def printInfoJiraissue(): #From Test
-    # Use a breakpoint in the code line below to debug your script.
-    # print(f'Hi, ')  # Press Ctrl+F8 to toggle the breakpoint.
-    issue = jira.issue('LAB-55')
-
-    summary = issue.fields.summary  # 'Field level security permissions'
-    description = issue.fields.description
-    # comment2 = issue.fields.comment
-    print(summary)
-    print(description)
-
-def createIssueToMelnikov(priority,description):
-    # priority = 'Low'
-    issue_dict = {
-        'project': {'key': 'LAB'},
-        'summary': 'New issue from jira-python',
-        'description': description, # 'Look into this one'
-        'issuetype': {'name': 'Bug'},
-        'labels': ['2book', 'python-author'],
-        'priority': {'name': priority},  # Работает. Ставит приоритет.
-        'assignee': {'accountId': "609cd2615998a60068f5959f"},  # неработает
-    }
-    new_issue = jira.create_issue(fields=issue_dict)
+{"dashboardId":2,"evalMatches":[{"value":99.71666666666654,"metric":"{instance=\"172.30.1.223:19100\"}","tags":{"instance":"172.30.1.223:19100"}}],"orgId":1,"panelId":14,"ruleId":88,"ruleName":"CPU% Basic alert","ruleUrl":"http://localhost:3000/d/wGHmL2znz/monitorings-with-alerts?tab=alert\u0026viewPanel=14\u0026orgId=1","state":"alerting","tags":{},"title":"[Alerting] CPU% Basic alert"}"""
+data = dataCPUAlerting
 
 def parsing(data):
     if data.find('[Alerting] Test notification') > -1:
@@ -78,79 +44,23 @@ def parsing(data):
         print(descriptionTask)
         return descriptionTask
 
-# ===================================== Jira =====================================
+split_data = data.split("\n")  # Нарезаем в массив строк по символу переноса строки
+message_string = split_data[len(split_data) - 1].split(",") #[len(split_data)-1] = Последний элемент массива. Счёт с нуля поэтому -1; Нарезаем в массив строк по символу ЗАПЯТАЯ ;
 
+for x in message_string:  # Перебирает все элементы массива и распечатывает
+    print(x)  # Перебирает все элементы массива и распечатывает
+print("===================\n")
 
+#print( dataCPUAlerting.find('[Alerting] CPU% Basic alert') )
 
-while True:  # В цикле бесконечном слушаем и печатаем входящие данные
-    client_socket, address = server.accept()  # Тут задержка программы пока не придут данные на сокет. Сокет - програмный интерфейс приаттаченный к порту
-    data = client_socket.recv(1624).decode('utf-8')  # Принимаем 1624 байта и декодируем их как строку в utf-8 кодировке
-
-    # ============= Инкримент вход сообщений. Нужен для обработки повторов
-    count = count + 1
-    print("count:")
-    print(count)
-    # ============= Инкримент вход сообщений. Нужен для обработки повторов
-
-    print('\n=========================\n')
-    print(data)
-
-    split_data = data.split("\n")  # Нарезаем в массив строк по символу переноса строки
-
-    # print("split_data:")
-    # print(split_data)
-
-    # print("split_data[0]:")
-    # print(split_data[0])
-
-    # print("split_data[7]:")
-    # print(split_data[7],'\n')
-
-    # messadge_string = split_data[7].split(",")  #Нарезаем в массив строк по символу ЗАПЯТАЯ
-    # message_string = [0, 1, 2]
-    message_string = split_data[len(split_data) - 1].split(
-        ",")  #  [len(split_data)-1] = Последний элемент массива. Счёт с нуля поэтому -1; Нарезаем в массив строк по символу ЗАПЯТАЯ ;
-    print("\nmessage_strings [all] :")
-    # print(messadge_string[0])
-    # print(len(messadge_string) )    #len() тут кол во элементов в массиве
-    for x in message_string:  # Перебирает все элементы массива и распечатывает
-        print(x)  # Перебирает все элементы массива и распечатывает
-    print("===================\n")
-
-
-    # Парсим на предмет - тестовоя нотификация, превышение cpu, превышение ram
-    if data.find('title') > -1:
-        count = data.find('title')       +len("title") +3
-        count2 = data.find('}', count) -1
-        # count += len("title") +3
-        #print('count:')
-        #print(count)
-        #print(data[count:count+25])
-        #print("===================\n")
-        print(data[count:count2])
-        descriptionTask=data[count:count2]
-    else:
-        descriptionTask = "Not parsed"
-    # Cоздание вопроса в Jira
-    createIssueToMelnikov(priority="High", description=descriptionTask)
-    # Cоздание вопроса в Jira
-
-print('shutdown this shit...')
+# Парсим на предмет - тестовоя нотификация, превышение cpu, превышение ram
+parsing(data)
 
 
 
 
-# Обработка повторяемости. Не работает. Разный ruleId":8240654365311143909
-#if count % 2 == 0:
-#    new_data = message_string
-#
-#else:
-#    old_data = message_string
 
-#if new_data == old_data:
-#    print("Povtor!")
-#else:
-#    print("Net Povtora")
-#    print(old_data)
-#    print(new_data)
-# Обработка повторяемости
+#stroka = "banana"
+#data  = dataTest.find('value')
+#print('data:')
+#print(data)
